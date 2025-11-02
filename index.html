@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Matrix Multiplication</title>
+<title>Matrix Multiplication Analyzer</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   body {
@@ -103,6 +103,10 @@
   canvas {
     margin-top: 20px;
   }
+  #performanceChart {
+    width: 100%;
+    height: 300px !important;
+  }
 </style>
 </head>
 <body>
@@ -151,7 +155,9 @@
 
   <div class="card">
     <h3>Performance Comparison Chart</h3>
-    <canvas id="performanceChart" height="90" width="600px"></canvas>
+    <div style="width:100%; overflow-x:auto;">
+      <canvas id="performanceChart"></canvas>
+    </div>
   </div>
 </div>
 
@@ -163,7 +169,6 @@ let chartData = {
 };
 let chart;
 
-// Initialize Chart
 function initChart() {
   const ctx = document.getElementById("performanceChart").getContext("2d");
   chart = new Chart(ctx, {
@@ -173,16 +178,34 @@ function initChart() {
       datasets: [{
         label: 'Execution Time (ms)',
         data: chartData.times,
-        backgroundColor: ['#2563eb', '#059669', '#d97706']
+        backgroundColor: ['#2563eb', '#059669', '#d97706'],
+        borderRadius: 8,
       }]
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       scales: {
-        y: { beginAtZero: true }
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: "Time (ms)" },
+          grid: { color: '#e5e7eb' }
+        },
+        x: {
+          title: { display: true, text: "Execution Type" },
+          grid: { display: false }
+        }
       },
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#1e3a8a",
+          titleColor: "#fff",
+          bodyColor: "#fff"
+        }
+      },
+      layout: {
+        padding: 10
       }
     }
   });
@@ -190,6 +213,7 @@ function initChart() {
 
 function updateChart(index, time) {
   chartData.times[index] = time;
+  chart.data.datasets[0].data = chartData.times;
   chart.update();
 }
 
@@ -252,7 +276,7 @@ function clearAll() {
   chart.update();
 }
 
-// ------------------- SINGLE THREADED -------------------
+// ---------------- SINGLE THREADED ----------------
 function multiplySingle() {
   if (!A.length || !B.length) return alert("Enter matrices first!");
   const t0 = performance.now();
@@ -280,7 +304,7 @@ function multiplySingle() {
   updateChart(0, +(t1 - t0).toFixed(2));
 }
 
-// ------------------- MULTITHREADED: PER ROW -------------------
+// ---------------- MULTITHREADED (PER ROW) ----------------
 function multiplyPerRow() {
   if (!A.length || !B.length) return alert("Enter matrices first!");
   const t0 = performance.now();
@@ -329,7 +353,7 @@ function multiplyPerRow() {
   }
 }
 
-// ------------------- MULTITHREADED: PER CELL -------------------
+// ---------------- MULTITHREADED (PER CELL) ----------------
 function multiplyPerCell() {
   if (!A.length || !B.length) return alert("Enter matrices first!");
   const n = A.length, m = B[0].length;
